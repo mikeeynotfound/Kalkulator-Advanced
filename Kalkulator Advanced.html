@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Ilmiah</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Roboto+Mono:wght@400&display=swap');
+
+        :root {
+            --light-bg: #f0f2f5;
+            --light-calc-bg: #ffffff;
+            --light-display-bg: #f9f9f9;
+            --light-text: #212121;
+            --light-btn-bg: #f8f9fa;
+            --light-btn-hover: #e9ecef;
+            --light-op-bg: #e9ecef;
+            --light-op-hover: #dee2e6;
+            --light-equal-bg: #007bff;
+            --light-equal-hover: #0069d9;
+            --light-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+
+            --dark-bg: #121212;
+            --dark-calc-bg: #1e1e1e;
+            --dark-display-bg: #2a2a2a;
+            --dark-text: #e0e0e0;
+            --dark-btn-bg: #333333;
+            --dark-btn-hover: #444444;
+            --dark-op-bg: #555555;
+            --dark-op-hover: #666666;
+            --dark-equal-bg: #0d6efd;
+            --dark-equal-hover: #0b5ed7;
+            --dark-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="light"] {
+            --bg-color: var(--light-bg);
+            --calc-bg-color: var(--light-calc-bg);
+            --display-bg-color: var(--light-display-bg);
+            --text-color: var(--light-text);
+            --btn-bg-color: var(--light-btn-bg);
+            --btn-hover-color: var(--light-btn-hover);
+            --op-btn-bg-color: var(--light-op-bg);
+            --op-btn-hover-color: var(--light-op-hover);
+            --equal-btn-bg-color: var(--light-equal-bg);
+            --equal-btn-hover-color: var(--light-equal-hover);
+            --shadow-color: var(--light-shadow);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: var(--dark-bg);
+            --calc-bg-color: var(--dark-calc-bg);
+            --display-bg-color: var(--dark-display-bg);
+            --text-color: var(--dark-text);
+            --btn-bg-color: var(--dark-btn-bg);
+            --btn-hover-color: var(--dark-btn-hover);
+            --op-btn-bg-color: var(--dark-op-bg);
+            --op-btn-hover-color: var(--dark-op-hover);
+            --equal-btn-bg-color: var(--dark-equal-bg);
+            --equal-btn-hover-color: var(--dark-equal-hover);
+            --shadow-color: var(--dark-shadow);
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 16px;
+            transition: background-color var(--transition-speed);
+        }
+
+        .main-container {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .calculator {
+            width: 100%;
+            max-width: 420px;
+            background-color: var(--calc-bg-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow-color);
+            padding: 24px;
+            transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-color);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+        }
+
+        .switch input { display: none; }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: var(--transition-speed);
+            border-radius: 26px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; width: 20px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: var(--transition-speed);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: var(--equal-btn-bg-color); }
+        input:checked + .slider:before { transform: translateX(24px); }
+
+        .display {
+            background-color: var(--display-bg-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            text-align: right;
+            word-wrap: break-word;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: background-color var(--transition-speed);
+        }
+        
+        #previous-expression {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+            color: #888;
+            height: 20px;
+        }
+        
+        #current-expression {
+            font-family: 'Roboto Mono', monospace;
+            font-size: 28px;
+            color: var(--text-color);
+            min-height: 40px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+        }
+
+        .btn {
+            font-size: 18px;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            background-color: var(--btn-bg-color);
+            color: var(--text-color);
+            transition: background-color var(--transition-speed);
+            font-weight: 500;
+        }
+
+        .btn:hover { background-color: var(--btn-hover-color); }
+        .btn.operator { background-color: var(--op-btn-bg-color); color: var(--equal-btn-bg-color); }
+        .btn.operator:hover { background-color: var(--op-btn-hover-color); }
+        .btn.equal { background-color: var(--equal-btn-bg-color); color: white; grid-column: span 2; }
+        .btn.equal:hover { background-color: var(--equal-btn-hover-color); }
+        .btn.function { font-size: 14px; }
+
+        .history-container {
+            width: 100%;
+            max-width: 250px;
+            background-color: var(--calc-bg-color);
+            color: var(--text-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-color);
+        }
+
+        .history-container h2 { margin-bottom: 16px; font-size: 18px; text-align: center; }
+
+        #history-list {
+            list-style: none;
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 8px;
+        }
+        #history-list::-webkit-scrollbar { width: 5px; }
+        #history-list::-webkit-scrollbar-track { background: var(--display-bg-color); }
+        #history-list::-webkit-scrollbar-thumb { background: var(--op-btn-bg-color); }
+
+        .history-item {
+            font-family: 'Roboto Mono', monospace;
+            padding: 8px;
+            border-bottom: 1px solid var(--display-bg-color);
+        }
+        .history-item span { display: block; }
+        .history-item .expr { font-size: 12px; color: #888; }
+        .history-item .res { font-size: 14px; text-align: right; }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; align-items: center; }
+            .history-container { max-width: 420px; }
+            .buttons { grid-template-columns: repeat(4, 1fr); }
+            .btn.function { grid-column: span 1 !important; }
+            #btn-deg, #btn-rad, #btn-fact, #btn-pi, #btn-e, #btn-pow, #btn-sqrt { display: none; } /* Hide some for smaller grid */
+        }
+        @media (max-width: 420px) {
+            .buttons { gap: 8px; }
+            .btn { padding: 12px; }
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="main-container">
+        <div class="calculator">
+            <div class="header">
+                <div class="angle-mode">
+                    <button class="btn function" id="angle-mode-btn">RAD</button>
+                </div>
+                <div class="theme-switcher">
+                    <span>☀️</span>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider"></span>
+                    </label>
+                    <span>🌙</span>
+                </div>
+            </div>
+            <div class="display">
+                <div id="previous-expression"></div>
+                <div id="current-expression">0</div>
+            </div>
+            <div class="buttons">
+                <button class="btn operator function" data-value="sin(">sin</button>
+                <button class="btn operator function" data-value="cos(">cos</button>
+                <button class="btn operator function" data-value="tan(">tan</button>
+                <button class="btn operator" data-value="AC">AC</button>
+                <button class="btn operator" data-value="DEL">DEL</button>
+                <button class="btn operator function" data-value="log(">log</button>
+                <button class="btn operator function" data-value="ln(">ln</button>
+                <button class="btn" data-value="(">(</button>
+                <button class="btn" data-value=")">)</button>
+                <button class="btn operator" data-value="%">%</button>
+                <button class="btn" data-value="7">7</button>
+                <button class="btn" data-value="8">8</button>
+                <button class="btn" data-value="9">9</button>
+                <button class="btn operator" data-value="^">xʸ</button>
+                <button class="btn operator" data-value="sqrt(">√</button>
+                <button class="btn" data-value="4">4</button>
+                <button class="btn" data-value="5">5</button>
+                <button class="btn" data-value="6">6</button>
+                <button class="btn operator" data-value="*">×</button>
+                <button class="btn operator" data-value="/">÷</button>
+                <button class="btn" data-value="1">1</button>
+                <button class="btn" data-value="2">2</button>
+                <button class="btn" data-value="3">3</button>
+                <button class="btn operator" data-value="+">+</button>
+                <button class="btn operator" data-value="-">−</button>
+                <button class="btn" data-value="0">0</button>
+                <button class="btn" data-value=".">.</button>
+                <button class="btn" data-value="π">π</button>
+                <button class="btn equal" data-value="=">=</button>
+            </div>
+        </div>
+
+        <div class="history-container">
+            <h2>Riwayat</h2>
+            <ul id="history-list">
+                </ul>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- STATE MANAGEMENT ---
+    let currentExpression = '0';
+    let previousExpression = '';
+    let history = JSON.parse(localStorage.getItem('calcHistory')) || [];
+    let angleMode = 'RAD'; // RAD or DEG
+
+    // --- DOM ELEMENTS ---
+    const currentExprEl = document.getElementById('current-expression');
+    const previousExprEl = document.getElementById('previous-expression');
+    const buttons = document.querySelector('.buttons');
+    const themeToggle = document.getElementById('theme-toggle');
+    const historyList = document.getElementById('history-list');
+    const angleModeBtn = document.getElementById('angle-mode-btn');
+
+    // --- CORE LOGIC ---
+    const updateDisplay = () => {
+        currentExprEl.textContent = currentExpression.replace(/\*/g, '×').replace(/\//g, '÷');
+        previousExprEl.textContent = previousExpression.replace(/\*/g, '×').replace(/\//g, '÷');
+    };
+
+    const handleInput = (value) => {
+        if (currentExpression === '0' || currentExpression === 'Error') {
+            currentExpression = '';
+        }
+
+        switch (value) {
+            case 'AC':
+                currentExpression = '0';
+                previousExpression = '';
+                break;
+            case 'DEL':
+                if (currentExpression.length > 1) {
+                    currentExpression = currentExpression.slice(0, -1);
+                } else {
+                    currentExpression = '0';
+                }
+                break;
+            case '=':
+                try {
+                    const result = evaluate(currentExpression);
+                    previousExpression = `${currentExpression} =`;
+                    currentExpression = String(result);
+                    addToHistory(previousExpression, currentExpression);
+                } catch (error) {
+                    currentExpression = 'Error';
+                    previousExpression = error.message || 'Operasi tidak valid';
+                }
+                break;
+            case 'π':
+                 currentExpression += Math.PI;
+                 break;
+            default:
+                currentExpression += value;
+                break;
+        }
+        updateDisplay();
+    };
+
+    // --- EVALUATION ENGINE (Shunting-Yard & RPN) ---
+    const evaluate = (expr) => {
+        // Pre-process for factorial and percentage
+        expr = expr.replace(/(\d+)!/g, "(factorial($1))");
+        expr = expr.replace(/(\d+(\.\d+)?)%/g, "($1/100)");
+
+        const precedence = { '+': 1, '-': 1, '*': 2, '/': 2, '^': 3 };
+        const functions = ['sin', 'cos', 'tan', 'log', 'ln', 'sqrt', 'factorial'];
+
+        const toRpn = (tokens) => {
+            const outputQueue = [];
+            const operatorStack = [];
+
+            for (const token of tokens) {
+                if (!isNaN(token) || token === 'π') {
+                    outputQueue.push(token === 'π' ? Math.PI : parseFloat(token));
+                } else if (functions.includes(token)) {
+                    operatorStack.push(token);
+                } else if (token === '^' || token in precedence) {
+                    while (
+                        operatorStack.length > 0 &&
+                        operatorStack[operatorStack.length - 1] !== '(' &&
+                        (precedence[operatorStack[operatorStack.length - 1]] >= precedence[token])
+                    ) {
+                        outputQueue.push(operatorStack.pop());
+                    }
+                    operatorStack.push(token);
+                } else if (token === '(') {
+                    operatorStack.push(token);
+                } else if (token === ')') {
+                    while (operatorStack.length > 0 && operatorStack[operatorStack.length - 1] !== '(') {
+                        outputQueue.push(operatorStack.pop());
+                    }
+                    if (operatorStack[operatorStack.length - 1] === '(') {
+                        operatorStack.pop();
+                        if (functions.includes(operatorStack[operatorStack.length - 1])) {
+                           outputQueue.push(operatorStack.pop());
+                        }
+                    } else {
+                        throw new Error("Kurung tidak cocok");
+                    }
+                }
+            }
+            
+            while(operatorStack.length > 0) {
+                if (operatorStack[operatorStack.length-1] === '(') throw new Error("Kurung tidak cocok");
+                outputQueue.push(operatorStack.pop());
+            }
+            return outputQueue;
+        };
+
+        const calculateRpn = (rpnQueue) => {
+            const stack = [];
+            for (const token of rpnQueue) {
+                if (typeof token === 'number') {
+                    stack.push(token);
+                } else if (token in precedence || token === '^') {
+                    if (stack.length < 2) throw new Error("Sintaks tidak valid");
+                    const b = stack.pop();
+                    const a = stack.pop();
+                    switch (token) {
+                        case '+': stack.push(a + b); break;
+                        case '-': stack.push(a - b); break;
+                        case '*': stack.push(a * b); break;
+                        case '/':
+                            if (b === 0) throw new Error("Pembagian dengan nol");
+                            stack.push(a / b);
+                            break;
+                        case '^': stack.push(Math.pow(a, b)); break;
+                    }
+                } else if (functions.includes(token)) {
+                    if (stack.length < 1) throw new Error("Sintaks tidak valid");
+                    const a = stack.pop();
+                    let val = a;
+                    if (angleMode === 'DEG' && ['sin', 'cos', 'tan'].includes(token)) {
+                        val = a * (Math.PI / 180); // Convert to radians
+                    }
+                    switch(token) {
+                        case 'sin': stack.push(Math.sin(val)); break;
+                        case 'cos': stack.push(Math.cos(val)); break;
+                        case 'tan': stack.push(Math.tan(val)); break;
+                        case 'log': stack.push(Math.log10(a)); break;
+                        case 'ln': stack.push(Math.log(a)); break;
+                        case 'sqrt':
+                             if (a < 0) throw new Error("Akar dari negatif");
+                             stack.push(Math.sqrt(a)); break;
+                        case 'factorial':
+                            if (a < 0 || !Number.isInteger(a)) throw new Error("Faktorial tidak valid");
+                            let result = 1;
+                            for (let i = 2; i <= a; i++) result *= i;
+                            stack.push(result);
+                            break;
+                    }
+                }
+            }
+            if (stack.length !== 1) throw new Error("Ekspresi tidak valid");
+            return stack[0];
+        };
+        
+        // Tokenizer: Split expr into numbers, operators, functions, and parentheses
+        const tokens = expr.match(/(\d+\.\d*|\d+|\b(sin|cos|tan|log|ln|sqrt|factorial)\b|[()+\-*/^%π!])/g);
+        if (!tokens) throw new Error("Input tidak valid");
+        const rpn = toRpn(tokens);
+        const result = calculateRpn(rpn);
+        return parseFloat(result.toPrecision(12)); // Return with precision
+    };
+    
+
+    // --- HISTORY MANAGEMENT ---
+    const addToHistory = (expr, res) => {
+        history.unshift({ expr, res });
+        if (history.length > 20) {
+            history.pop();
+        }
+        localStorage.setItem('calcHistory', JSON.stringify(history));
+        renderHistory();
+    };
+
+    const renderHistory = () => {
+        historyList.innerHTML = '';
+        if (history.length === 0) {
+            historyList.innerHTML = '<li class="history-item">Belum ada riwayat.</li>';
+            return;
+        }
+        history.forEach(item => {
+            const li = document.createElement('li');
+            li.classList.add('history-item');
+            li.innerHTML = `<span class="expr">${item.expr.replace(/\*/g, '×').replace(/\//g, '÷')}</span><span class="res">${item.res}</span>`;
+            historyList.appendChild(li);
+        });
+    };
+
+    // --- THEME SWITCHER ---
+    const setTema = (tema) => {
+        document.body.setAttribute('data-theme', tema);
+        localStorage.setItem('calculatorTheme', tema);
+        themeToggle.checked = tema === 'dark';
+    };
+
+    themeToggle.addEventListener('change', () => {
+        setTema(themeToggle.checked ? 'dark' : 'light');
+    });
+
+    // --- ANGLE MODE ---
+    angleModeBtn.addEventListener('click', () => {
+        angleMode = angleMode === 'RAD' ? 'DEG' : 'RAD';
+        angleModeBtn.textContent = angleMode;
+    });
+
+    // --- EVENT LISTENERS ---
+    buttons.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            handleInput(e.target.dataset.value);
+        }
+    });
+
+    window.addEventListener('keydown', (e) => {
+        const key = e.key;
+        const validKeys = '0123456789.+-*/^()';
+        if (validKeys.includes(key)) {
+            e.preventDefault();
+            handleInput(key);
+        } else if (key === 'Enter' || key === '=') {
+            e.preventDefault();
+            handleInput('=');
+        } else if (key === 'Backspace') {
+            e.preventDefault();
+            handleInput('DEL');
+        } else if (key.toLowerCase() === 'c') {
+            e.preventDefault();
+            handleInput('AC');
+        }
+    });
+
+
+    // --- INITIALIZATION ---
+    const savedTheme = localStorage.getItem('calculatorTheme') || 'light';
+    setTema(savedTheme);
+    updateDisplay();
+    renderHistory();
+});
+</script>
+
+</body>
+</html>
